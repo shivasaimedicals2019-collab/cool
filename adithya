@@ -1,0 +1,146 @@
+-- [[ Delta Executor - Premium WindUI Template ]] --
+
+-- Load WindUI Library
+local WindUI = loadstring(game:HttpGet("https://tree-hub.vercel.app/api/UI/WindUI"))()
+
+-- Services & Local Variables
+local Players = game:GetService("Players")
+local RunService = game:GetService("RunService")
+local LocalPlayer = Players.LocalPlayer
+
+-- Configuration Table
+getgenv().Config = {
+    SpeedEnabled = false,
+    WalkSpeed = 16,
+    JumpPower = 50,
+    ESPEnabled = false
+}
+
+-- Create Main Window
+local Window = WindUI:CreateWindow({
+    Title = "Nexus Hub Pro",
+    SubTitle = "Delta Premium Edition",
+    TabWidth = 160,
+    Size = UDim2.fromOffset(580, 420),
+    Theme = "Dark", -- Themes: "Dark", "Light", "Rose", "Aqua", etc.
+    Transparent = true, -- Cool glassmorphism acrylic blur
+    Icon = "sparkles" -- Lucide icon
+})
+
+-- Send Custom Built-in Notification
+WindUI:Notify({
+    Title = "Script Loaded",
+    Content = "Welcome to Nexus Hub Pro!",
+    Duration = 4,
+    Icon = "check-circle"
+})
+
+-- ==========================================================
+-- TAB 1: MAIN UTILITIES
+-- ==========================================================
+local MainTab = Window:Tab({
+    Title = "Main Features",
+    Icon = "zap"
+})
+
+MainTab:Section({ Title = "Character Modifiers" })
+
+-- Speed Toggle & Slider
+MainTab:Toggle({
+    Title = "Enable Speed",
+    Desc = "Overclock your movement speed",
+    Value = getgenv().Config.SpeedEnabled,
+    Callback = function(state)
+        getgenv().Config.SpeedEnabled = state
+    end
+})
+
+MainTab:Slider({
+    Title = "Walk Speed",
+    Min = 16,
+    Max = 200,
+    Default = 16,
+    Callback = function(value)
+        getgenv().Config.WalkSpeed = value
+    end
+})
+
+MainTab:Section({ Title = "Actions" })
+
+MainTab:Button({
+    Title = "Reset Character",
+    Desc = "Instantly respawn your character",
+    Icon = "rotate-ccw",
+    Callback = function()
+        if LocalPlayer.Character then
+            LocalPlayer.Character:BreakJoints()
+        end
+    end
+})
+
+-- ==========================================================
+-- TAB 2: VISUALS (ESP)
+-- ==========================================================
+local VisualsTab = Window:Tab({
+    Title = "Visuals",
+    Icon = "eye"
+})
+
+VisualsTab:Section({ Title = "Player Highlights" })
+
+VisualsTab:Toggle({
+    Title = "Player ESP",
+    Desc = "Highlight players through walls",
+    Value = getgenv().Config.ESPEnabled,
+    Callback = function(state)
+        getgenv().Config.ESPEnabled = state
+        for _, player in ipairs(Players:GetPlayers()) do
+            if player ~= LocalPlayer and player.Character then
+                if state then
+                    if not player.Character:FindFirstChild("WindESP") then
+                        local hl = Instance.new("Highlight")
+                        hl.Name = "WindESP"
+                        hl.FillColor = Color3.fromRGB(138, 43, 226) -- Purple glow
+                        hl.OutlineColor = Color3.fromRGB(255, 255, 255)
+                        hl.Adornee = player.Character
+                        hl.Parent = player.Character
+                    end
+                else
+                    local hl = player.Character:FindFirstChild("WindESP")
+                    if hl then hl:Destroy() end
+                end
+            end
+        end
+    end
+})
+
+-- ==========================================================
+-- TAB 3: SETTINGS / UI CONTROL
+-- ==========================================================
+local SettingsTab = Window:Tab({
+    Title = "Settings",
+    Icon = "settings"
+})
+
+SettingsTab:Keybind({
+    Title = "Toggle UI Keybind",
+    Desc = "Show/Hide this window",
+    Default = Enum.KeyCode.RightControl,
+    Callback = function()
+        Window:Toggle()
+    end
+})
+
+-- ==========================================================
+-- BACKGROUND LOGIC
+-- ==========================================================
+RunService.Heartbeat:Connect(function()
+    pcall(function()
+        if getgenv().Config.SpeedEnabled and LocalPlayer.Character then
+            local humanoid = LocalPlayer.Character:FindFirstChildOfClass("Humanoid")
+            if humanoid then
+                humanoid.WalkSpeed = getgenv().Config.WalkSpeed
+            end
+        end
+    end)
+end)
